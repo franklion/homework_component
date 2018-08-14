@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>作業練習：元件變換</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="images/favicon.ico" rel="shortcut icon">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/stylesheets/all.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/solid.js" integrity="sha384-+Ga2s7YBbhOD6nie0DzrZpJes+b2K1xkpKxTFFcx59QmVPaSA8c7pycsNaFwUK6l" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/regular.js" integrity="sha384-t7yHmUlwFrLxHXNLstawVRBMeSLcXTbQ5hsd0ifzwGtN7ZF7RZ8ppM7Ldinuoiif" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/fontawesome.js" integrity="sha384-7ox8Q2yzO/uWircfojVuCQOZl+ZZBg2D2J5nkpLqzH1HY0C1dHlTKIbpRz/LG23c" crossorigin="anonymous"></script>    <script src="/javascripts/vendor.js"></script>
+
+    <style>
+    /* 
+      狀態對應表
+      '良好',
+      'status-aqi2' '普通',
+      'status-aqi3' '對敏感族群不健康',
+      'status-aqi4' '對所有族群不健康',
+      'status-aqi5' '非常不健康',
+      'status-aqi6' '危害'
+     */
+      .status-aqi2 {
+        background-color: #ffff00;
+      }
+      .status-aqi3 {
+        background-color: #ff7e00;
+      }
+      .status-aqi4 {
+        background-color: #ff0000;
+      }
+      .status-aqi5 {
+        background-color: #8f3f97;
+      }
+      .status-aqi6 {
+        background-color: #7e0023;
+      }
+    </style>
+  </head>
+  
+  <body class="bg-lighter">
+    
+    <div class="container">
+      <div class="col-md-12 post"> 
+        <h1 class="mt-0 text-muted">作業練習：元件變換</h1>
+            
+        <h3>模板練習作業：Ajax 資料內容呈現</h3>
+        <p>本作業一定要用到元件。</p>
+        <div class="alert alert-secondary">
+          <p>提示：</p>
+          <ol class="mb-0">
+            <li>將資料內容透過 "元件" 呈現</li>
+            <li>製作城市過濾選項</li>
+            <li>將內層資料透過 emit 傳遞到外層 (作為另一個關注城市的呈現)</li>
+            <li>依據不同污染呈現不同色彩</li>
+            <li>加分題：透過 localStorage 儲存上次關注的城市</li>
+          </ol>
+        </div>
+  
+        <div id="app">
+          <select name="" id="" class="form-control mb-3" v-model="selectedCity">
+            <option value="">--- 請選擇城市 ---</option>
+            <option :value="city" v-for="city in filteredCities">{{ city }}</option>
+          </select>
+          <div>
+            <h4>關注城市</h4>
+            <div class="card-columns">
+              <card-cmp @toggle-attention="updateAttentionCity" :props-card="item" v-for="(item,index) in attentionData" :key="index"></card-cmp>  
+            </div>
+          </div>
+          
+          <hr>
+          <div class="card-columns">
+            <card-cmp @toggle-attention="updateAttentionCity" :props-card="item" v-for="(item,index) in filteredData" :key="index"></card-cmp>
+          </div>
+          
+        </div>
+  
+      </div>
+    </div>
+    
+  </body>  
+
+<script type="text/x-template" id="card-cmp">
+  <div class="card" :class="statusClass">
+    <div class="card-header">{{ propsCard.County }} - {{ propsCard.SiteName }}
+      <a href="#" class="float-right" @click.prevent="toggleAttentionCity(propsCard.id)"><i class="fa-star" :class="attentionClass"></i></a>
+    </div>
+    <div class="card-body">
+      <ul class="list-unstyled">
+        <li>AQI 指數: {{ propsCard.AQI }}</li>
+        <li>PM2.5: {{ propsCard.AQI }}</li>
+        <li>說明: {{ propsCard.Status }}</li>
+      </ul>
+      {{ propsCard.PublishTime }}
+    </div>
+  </div>
+</script>
+
+<script>
+Vue.component('card-cmp', {
+  props: ['propsCard'],
+  template: '#card-cmp',
+  computed: {
+    statusClass() {
+      if(this.propsCard.Status === '普通') {
+        return 'status-aqi2'
+      } else if (this.propsCard.Status === '對敏感族群不健康') {
+        return 'status-aqi3'
+      } else if (this.propsCard.Status === '對所有族群不健康') {
+        return 'status-aqi4'
+      } else if (this.propsCard.Status === '非常不健康') {
+        return 'status-aqi5'
+      } else if (this.propsCard.Status === '危害') {
+        return 'status-aqi6'
+      } else {
+        return ''
+      }
+    },
+    attentionClass() {
+      return this.propsCard.attention ? 'fas' : 'far'
+    }
+  },
+  methods: {
+    toggleAttentionCity(id) {
+      console.log(`cmp:${id}`)
+      this.$emit('toggle-attention', id) 
+    }
+  }
+});
+
+// API 來源
+// https://opendata.epa.gov.tw/Data/Contents/AQI/
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    data: [],
+    selectedCity: '',
+  },
+  // 請在此撰寫 JavaScript
+  methods: {
+    updateAttentionCity(id) {
+      console.log(`parent:${id}`)
+
+      this.data.some((item, index) => {
+        if(item.id === id) {
+          this.$set(this.data, index, {...item, 'attention': !item.attention})
+
+          const currentDatas = JSON.parse(localStorage.getItem('attention')) || []
+          !item.attention ? this.storeData(currentDatas, item.id) : this.removeData(currentDatas, item.id)
+          
+          return true
+        } else {
+          return false
+        }
+      })
+    },
+    storeData(currentDatas, storeData) {
+      currentDatas.push(storeData)
+      localStorage.setItem("attention", JSON.stringify(currentDatas))
+    },
+    removeData(currentDatas, removeData) {
+      const index = currentDatas.indexOf(removeData)
+
+      if(index > -1) {
+        currentDatas.splice(index, 1)
+        localStorage.setItem("attention", JSON.stringify(currentDatas))
+      }
+    }
+  },
+  computed: {
+    filteredCities() {
+      const allCities = this.data.map((item, index) => item.County)
+      return [ ...new Set(allCities) ]
+    },
+    filteredData() {
+      return this.data.filter((item, index) => {
+        if(this.selectedCity === '') {
+          return !item.attention
+        } else {
+          return  (this.selectedCity === item.County) && !item.attention
+        }
+      })
+    },
+    attentionData() {
+      return this.data.filter((item, index) => item.attention)
+    }
+  },
+  mounted() {
+      const api = 'http://opendata2.epa.gov.tw/AQI.json';
+
+      $.get(api)
+        .then(response => {
+          this.data = response.map(item => {
+
+            const attention = JSON.parse(localStorage.getItem('attention'))
+            const id = `${item.County}-${item.SiteName}`
+
+            if(!attention) {
+              return {...item, id , attention: false }
+            }
+
+            const result = attention.indexOf(id) > -1
+            return {...item, id , attention: result }
+          })
+        })
+        .catch(err => console.log(err)) 
+  },
+});
+</script>
+
+
+</html>
