@@ -65,13 +65,21 @@
           <div>
             <h4>關注城市</h4>
             <div class="card-columns">
-              <card-cmp @toggle-attention="updateAttentionCity" :props-card="item" v-for="(item,index) in attentionData" :key="index"></card-cmp>  
+              <card-cmp @toggle-attention="updateAttentionCity" 
+                        :props-card="item" 
+                        v-for="(item,index) in attentionData" 
+                        :key="index">
+              </card-cmp>  
             </div>
           </div>
           
           <hr>
           <div class="card-columns">
-            <card-cmp @toggle-attention="updateAttentionCity" :props-card="item" v-for="(item,index) in filteredData" :key="index"></card-cmp>
+            <card-cmp @toggle-attention="updateAttentionCity" 
+                      :props-card="item" 
+                      v-for="(item,index) in filteredData" 
+                      :key="index">
+            </card-cmp>
           </div>
           
         </div>
@@ -84,7 +92,9 @@
 <script type="text/x-template" id="card-cmp">
   <div class="card" :class="statusClass">
     <div class="card-header">{{ propsCard.County }} - {{ propsCard.SiteName }}
-      <a href="#" class="float-right" @click.prevent="toggleAttentionCity(propsCard.id)"><i class="fa-star" :class="attentionClass"></i></a>
+      <a href="#" class="float-right" @click.prevent="toggleAttentionCity(propsCard.id)">
+        <i class="fa-star" :class="attentionClass"></i>
+      </a>
     </div>
     <div class="card-body">
       <ul class="list-unstyled">
@@ -123,7 +133,6 @@ Vue.component('card-cmp', {
   },
   methods: {
     toggleAttentionCity(id) {
-      console.log(`cmp:${id}`)
       this.$emit('toggle-attention', id) 
     }
   }
@@ -138,10 +147,8 @@ var app = new Vue({
     data: [],
     selectedCity: '',
   },
-  // 請在此撰寫 JavaScript
   methods: {
     updateAttentionCity(id) {
-      console.log(`parent:${id}`)
 
       this.data.some((item, index) => {
         if(item.id === id) {
@@ -209,6 +216,4 @@ var app = new Vue({
   },
 });
 </script>
-
-
 </html>
